@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Camp - Session 3: Transport Layer & TCP/UDP Masterclass</title>
+    <style>
+        :root {
+            --bg-color: #0b1120;
+            --card-bg: #111c33;
+            --card-border: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-cyan: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-orange: #fb923c;
+            --accent-purple: #c084fc;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #111c33, #0f172a);
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 30px;
+        }
+        header h1 {
+            color: var(--accent-cyan);
+            font-size: 2.3rem;
+            margin: 0 0 10px 0;
+        }
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 1.7rem;
+            color: var(--text-main);
+            margin: 40px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 10px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+        .card-title {
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: var(--accent-cyan);
+            margin: 0 0 12px 0;
+        }
+        .sub-card {
+            background-color: #090e1a;
+            border: 1px solid #1a233a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 12px;
+        }
+        .sub-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+        .badge-success { color: var(--accent-green); }
+        .badge-danger { color: var(--accent-red); }
+        
+        /* Interactive Toggle Styles */
+        .toggle-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-box:hover {
+            border-color: var(--accent-cyan);
+        }
+        .toggle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.15rem;
+            color: var(--text-main);
+        }
+        .toggle-content {
+            display: none;
+            padding-top: 15px;
+            margin-top: 12px;
+            border-top: 1px dashed var(--card-border);
+            color: var(--text-muted);
+            font-size: 0.98rem;
+        }
+        .toggle-content p {
+            margin: 6px 0;
+        }
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--card-border);
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Session 3: Transport Layer Masterclass</h1>
+            <p>المرجع الهندسي المتخصص لطبقة النقل (Layer 4)، بروتوكولات TCP و UDP، الهيدر، المآخذ (Sockets)، والبورتات.</p>
+        </header>
+
+        <!-- 1. مقدمة طبقة النقل وما بعد الآي بي -->
+        <div class="section-title">🚀 1. ما بعد عنوان الـ IP (Beyond the IP Address)</div>
+        <div class="card" style="border-color: var(--accent-purple);">
+            <div class="card-title" style="color: var(--accent-purple);">🎯 القاعدة الذهبية لطبقة النقل</div>
+            <p style="font-size: 1.15rem; text-align: center; margin: 10px 0;"><b>"IP finds the host. Layer 4 finds the application."</b></p>
+            <p style="color: var(--text-muted); text-align: center; margin: 0;">عنوان الـ IP يوصلك لحد العمارة (الجهاز)، لكن طبقة النقل والبورتات بتوصلك لرقم الشقة (التطبيق المحدد جوه الجهاز)[cite: 23].</p>
+            
+            <div style="margin-top: 20px;">
+                <div class="sub-title">المهام الأساسية لطبقة النقل (Layer 4):</div>
+                <div class="sub-card">
+                    <p>• <b>Segmentation (التقطيع):</b> تقطيع البيانات الكبيرة إلى أجزاء صغيرة يسهل تتبعها وإرسالها[cite: 23].</p>
+                    <p>• <b>Flow Control (التحكم في التدفق):</b> تنظيم حركة البيانات لمنع حدوث ضغط أو انهيار في استقبال البيانات[cite: 23].</p>
+                    <p>• <b>Multiplexing (الإرسال المتعدد):</b> استخدام البورتات لتشغيل أكثر من تطبيق واستقبال البيانات في نفس الوقت[cite: 23].</p>
+                    <p>• <b>Error Handling (معالجة الأخطاء):</b> اكتشاف الباكت الضائعة أو التالفة وبدء استعادتها[cite: 23].</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. تحليل الهيدر (Header Overhead Breakdown) -->
+        <div class="section-title">📦 2. تحليل عبء الترويسات (Header Overhead Breakdown)</div>
+        <div class="card">
+            <div class="card-title">مقارنة ترويسات TCP و UDP</div>
+            
+            <div class="sub-card">
+                <div class="sub-title" style="color: var(--accent-cyan);">بروتوكول TCP (حجم متغير من 20 إلى 60 بايت)</div>
+                <p style="color: var(--text-muted); margin: 5px 0;">• منافذ المصدر والوجهة (Source & Destination Ports) بحجم 16 بت لكل منهما[cite: 24].</p>
+                <p style="color: var(--text-muted); margin: 5px 0;">• أرقام التسلسل والتأكيد (Sequence & Acknowledgment Numbers) بحجم 32 بت لكل منهما[cite: 24].</p>
+                <p style="color: var(--text-muted); margin: 5px 0;">• علامات التحكم (Control Flags): مثل SYN, ACK, FIN, RST, PSH, URG[cite: 24].</p>
+                <p style="color: var(--text-muted); margin: 5px 0;">• التحكم في التدفق عبر نافذة ديناميكية (Dynamic Window Size) بحجم 16 بت[cite: 24].</p>
+                <p style="color: var(--text-muted); margin: 5px 0;">• يضمن تسليم البيانات بنجاح (Guaranteed delivery) ولكن على حساب زيادة عبء المعالجة[cite: 24].</p>
+            </div>
+
+            <div class="sub-card" style="margin-top: 15px;">
+                <div class="sub-title" style="color: var(--accent-orange);">بروتوكول UDP (حجم ثابت 8 بايت فقط)</div>
+                <p style="color: var(--text-muted); margin: 5px 0;">• منفذ المصدر (Source Port) بحجم 16 بت[cite: 24].</p>
+                <p style="color: var(--text-muted); margin: 5px 0;">• منفذ الوجهة (Destination Port) بحجم 16 بت[cite: 24].</p>
+                <p style="color: var(--text-muted); margin: 5px 0;">• طول البيانات (Datagram Length) بحجم 16 بت[cite: 24].</p>
+                <p style="color: var(--text-muted); margin: 5px 0;">• فحص الأخطاء (Checksum) بحجم 16 بت[cite: 24].</p>
+                <p style="color: var(--text-muted); margin: 5px 0;">• بصمة خفيفة جداً (Minimal footprint) لتحقيق أقصى سرعة في التدفق (Ultra-fast throughput)[cite: 24].</p>
+            </div>
+        </div>
+
+        <!-- 3. دورة حياة اتصال TCP -->
+        <div class="section-title">🔄 3. دورة حياة اتصال TCP (Handshake & Teardown)</div>
+        <div class="card">
+            <div class="card-title">المصافحة الثلاثية والإنهاء الآمن</div>
+            
+            <div class="sub-card">
+                <div class="sub-title" style="color: var(--accent-green);">أولاً: إنشاء الاتصال (Establishment - 3-Way Handshake)[cite: 25]</div>
+                <p style="color: var(--text-muted); margin: 4px 0;">• <b>Step 1 [SYN]:</b> العميل يبدأ الاتصال ويرسل رقم التسلسل الأولي (Initial Sequence Number - ISN)[cite: 25].</p>
+                <p style="color: var(--text-muted); margin: 4px 0;">• <b>Step 2 [SYN + ACK]:</b> الخادم يرد مؤكداً الاستلام ومزامناً للبيانات[cite: 25].</p>
+                <p style="color: var(--text-muted); margin: 4px 0;">• <b>Step 3 [ACK]:</b> العميل يرسل التأكيد النهائي وتنتقل الجلسة لحالة <b>ESTABLISHED</b>[cite: 25].</p>
+            </div>
+
+            <div class="sub-card" style="margin-top: 15px;">
+                <div class="sub-title" style="color: var(--accent-red);">ثانياً: الإغلاق النظيف (Graceful Teardown)[cite: 25]</div>
+                <p style="color: var(--text-muted); margin: 4px 0;">• <b>Step 1 [FIN]:</b> أحد الطرفين يرسل طلب إنهاء الاتصال (Active close)[cite: 25].</p>
+                <p style="color: var(--text-muted); margin: 4px 0;">• <b>Step 2 [ACK]:</b> الطرف الآخر يؤكد استلام الإغلاق[cite: 25].</p>
+                <p style="color: var(--text-muted); margin: 4px 0;">• <b>Step 3 [FIN + ACK]:</b> المصافحة النهائية لتحرير مآخذ التوصيل (Sockets) ونظافة الذاكرة[cite: 25].</p>
+            </div>
+        </div>
+
+        <!-- 4. Sockets, Port Classifications & Multiplexing -->
+        <div class="section-title">🔌 4. الـ Sockets، تصنيفات البورتات، والـ Multiplexing</div>
+        <div class="card">
+            <div class="sub-card">
+                <div class="sub-title">ما هو الـ Network Socket؟ (مع مثال واقعي)</div>
+                <p style="color: var(--text-muted); margin: 6px 0;">هو اتحاد عنوان الـ IP الخاص بالجهاز مع رقم البورت في طبقة النقل[cite: 26].</p>
+                <p style="color: var(--accent-cyan); margin: 6px 0;"><b>المعادلة:</b> <code>Network Socket = Host IP Address + Layer 4 Port Number</code>[cite: 26]</p>
+                <p style="color: var(--text-muted); margin: 6px 0;"><b>مثال واقعي:</b> عندما يتصل جهازك <code>192.168.1.10</code> عبر البورت المؤقت <code>49153</code> بسيرفر الويب <code>192.168.1.100</code> عبر البورت <code>80</code>، فإن الاتصال يمثل السوكت التالي: <code>192.168.1.10:49153 talking to 192.168.1.100:80</code>[cite: 26].</p>
+            </div>
+
+            <div class="sub-card" style="margin-top: 15px;">
+                <div class="sub-title">تصنيفات البورتات (Port Classifications)</div>
+                <p style="color: var(--text-muted); margin: 6px 0;">1. <b>Well-Known Ports (0 - 1023):</b> محجوزة للخدمات القياسية العالمية بواسطة IANA[cite: 26]:</p>
+                <ul style="color: var(--text-muted); margin: 0 0 10px 20px;">
+                    <li><b>Port 80 / 443:</b> للويب (HTTP / HTTPS)[cite: 26, 27].</li>
+                    <li><b>Port 53:</b> لنظام أسماء النطاقات (DNS)[cite: 26, 27].</li>
+                    <li><b>Port 20 / 21:</b> لنقل الملفات (FTP).</li>
+                    <li><b>Port 22:</b> للاتصال الآمن (SSH).</li>
+                    <li><b>Ports 67 / 68:</b> لتوزيع الآبيات (DHCP)[cite: 27].</li>
+                </ul>
+                <p style="color: var(--text-muted); margin: 6px 0;">2. <b>Registered Ports (1024 - 49151):</b> مخصصة لتطبيقات الشركات[cite: 26]:</p>
+                <ul style="color: var(--text-muted); margin: 0 0 10px 20px;">
+                    <li><b>Port 3306:</b> لقواعد بيانات MySQL[cite: 26].</li>
+                    <li><b>Port 3389:</b> للتحكم عن بعد في الويندوز (RDP)[cite: 26].</li>
+                </ul>
+                <p style="color: var(--text-muted); margin: 6px 0;">3. <b>Dynamic / Ephemeral Ports (49152 - 65535):</b> بورتات مؤقتة يمنحها نظام التشغيل عشوائياً للعميل وقت فتح الاتصال[cite: 26].</p>
+            </div>
+
+            <div class="sub-card" style="margin-top: 15px;">
+                <div class="sub-title">خاصية الإرسال المتعدد عبر البورتات (Port Multiplexing)</div>
+                <p style="color: var(--text-muted); margin: 0;">تسمح لجهازك الذي يمتلك عنوان IP واحد أن يشغل متصفح ويب، ويستعلم عن DNS، ويفتح برنامج FTP في نفس اللحظة، حيث يوجه نظام التشغيل البيانات الواردة لكل تطبيق بدقة بناءً على البورت الخاص به[cite: 28].</p>
+            </div>
+        </div>
+
+        <!-- 5. مصفوفة القرار المعمارية وقصة المهندس -->
+        <div class="section-title">🏗️ 5. مصفوفة القرار المعمارية (Architectural Decision Matrix)</div>
+        <div class="card">
+            <div class="card-title" style="color: var(--accent-orange); font-size: 1.1rem; margin-bottom: 10px;">معضلة المهندس (The Architect's Dilemma):</div>
+            <blockquote style="background: #090e1a; border-right: 4px solid var(--accent-orange); margin: 0 0 20px 0; padding: 15px; border-radius: 6px; color: var(--text-main); font-style: italic;">
+                "A banking app using UDP is a security disaster. A live 4K stream using TCP is a buffering nightmare. Choose your protocol wisely."[cite: 29]
+            </blockquote>
+
+            <div class="sub-card">
+                <p style="margin: 4px 0;"><span style="color: var(--accent-orange); font-weight: bold;">1. Live 4K Video Broadcast:</span> البروتوكول: <b>UDP</b>. الأولوية للتدفق اللحظي وإسقاط الفريمات التالفة أفضل من تأخير الإعادة[cite: 30].</p>
+            </div>
+            <div class="sub-card" style="margin-top: 10px;">
+                <p style="margin: 4px 0;"><span style="color: var(--accent-cyan); font-weight: bold;">2. Secure Core Banking Database:</span> البروتوكول: <b>TCP</b>. الأولوية المطلقة لسلامة البيانات وعدم السماح بفقدان أي بايت[cite: 30].</p>
+            </div>
+            <div class="sub-card" style="margin-top: 10px;">
+                <p style="margin: 4px 0;"><span style="color: var(--accent-orange); font-weight: bold;">3. Competitive Esports FPS Gameplay:</span> البروتوكول: <b>UDP</b>. تحديث الإحداثيات الفوري أهم من الباكتات القديمة[cite: 30].</p>
+            </div>
+            <div class="sub-card" style="margin-top: 10px;">
+                <p style="margin: 4px 0;"><span style="color: var(--accent-cyan); font-weight: bold;">4. Operating System Firmware Update:</span> البروتوكول: <b>TCP</b>. التحقق التام من الحمولة ضروري، وفقدان بت واحد يدمر التثبيت[cite: 30].</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>Created by Gemini for Engineering Study Revision | Session 3 Transport Layer Masterclass</p>
+        </footer>
+    </div>
+</body>
+</html>
